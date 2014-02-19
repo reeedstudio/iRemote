@@ -1,9 +1,9 @@
-// ir receive test
-// loovee 2013-9-12
+// iRemote demo
+// 2014-2-19
 
 #include <IRSendRev.h>
 
-#define __Debug         0
+#define __Debug         1
 
 
 const int PINIR = 0;                   // define pin ir here
@@ -29,6 +29,7 @@ void setup()
     pinMode(12, OUTPUT);
     
     pinMode(13, LOW);
+    pinMode(12, LOW);
 
     
 }
@@ -40,6 +41,24 @@ long timers = 0;
 int __State = 0;
 int __State_buf = 0;
 
+void press_release(unsigned char keyVal)
+{
+    Keyboard.press(keyVal);
+    delay(10);
+    Keyboard.release(keyVal);
+}
+
+void enterString(char *str)
+{
+    while(*str)
+    {
+        press_release(str[0]);
+        delay(10);
+        str++;
+    }
+    
+    delay(10);
+}
 
 unsigned char key_buf[2] = {KEY_LEFT_ARROW, KEY_RIGHT_ARROW};
 
@@ -97,6 +116,22 @@ void loop()
             
             delay(100);
             Keyboard.releaseAll();
+        }
+        else if(dtaRecv[dtaRecv[0]] == 31)  // enter key
+        {
+            digitalWrite(12, HIGH);
+            delay(20);
+            digitalWrite(12, LOW);
+            
+            
+            press_release(KEY_RETURN);
+            
+            delay(500);
+            
+            enterString("123456");
+            
+            press_release(KEY_RETURN);
+
         }
     }
 
