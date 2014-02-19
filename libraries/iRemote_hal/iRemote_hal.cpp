@@ -7,7 +7,7 @@
 #define PINREDLED   12
 #define PINGREENLED 13
 
-#define __DBG           1
+#define __DBG           0
 
 void iRemote_hal::begin()
 {
