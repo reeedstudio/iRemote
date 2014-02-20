@@ -18,15 +18,13 @@ void setup()
     Serial.begin(115200);
     while(!Serial);
 #endif
-
     iRemote.begin();
-
+    
 }
 
 
 void write_code()
 {
-    delay(10);
 
     // Type out "blink":
     Keyboard.print("// iRemote demo, by loovee\r\n");
@@ -67,8 +65,6 @@ void dataProc(int keyVal)
 
         case 93:                                // logout
 
-
-
         Keyboard.press(KEY_LEFT_CTRL);
         Keyboard.press(KEY_LEFT_ALT);
         Keyboard.press(KEY_DELETE);
@@ -81,9 +77,7 @@ void dataProc(int keyVal)
         delay(100);
         Keyboard.releaseAll();
 
-
         break;
-
 
         case 31:                                // enter key
 
