@@ -2,7 +2,7 @@
 #include <iRemote_hal.h>
 #include <IRSendRev.h>
 
-#define PINIR   0
+#define PINIR   1
 
 #define PINREDLED   12
 #define PINGREENLED 13

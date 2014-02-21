@@ -4,7 +4,7 @@
 #include <IRSendRev.h>
 #include <iRemote_hal.h>
 
-#define __Debug         0
+#define __Debug         1
 
 
 unsigned char dtaRecv[20];              // receive data here
