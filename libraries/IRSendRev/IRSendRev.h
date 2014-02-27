@@ -26,13 +26,13 @@
 
 
 #define USECPERTICK 50  // microseconds per clock interrupt tick
-#define RAWBUF 300 // Length of raw duration buffer
+#define RAWBUF      500 // Length of raw duration buffer
 
 // Marks tend to be 100us too long, and spaces 100us too short
 // when received due to sensor lag.
 #define MARK_EXCESS 100
 
-#define __DEBUG     0
+#define __DEBUG     1
 
 // Results returned from the decoder
 class decode_results {
@@ -61,20 +61,6 @@ class IRSendRev
     unsigned char IsDta();                          // if IR get data
     void Clear();                                   // clear IR data
 
-    //**************************send*********************************
-    private:
-
-    void sendRaw(unsigned int buf[], int len, int hz);
-
-    // private:
-    
-    void mark(int usec);
-    void space(int usec);
-	void enableIROut(int khz);
-    
-    public:
-    
-    void Send(unsigned char *idata, unsigned char ifreq);
 
 };
 

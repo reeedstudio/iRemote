@@ -20,63 +20,11 @@
 #include "IRSendrev.h"
 #include "IRsendRevInt.h"
 
+#include <Streaming.h>
 // Provides ISR
 #include <avr/interrupt.h>
 
 volatile irparams_t irparams;
-
-void IRSendRev::sendRaw(unsigned int buf[], int len, int hz)
-{
-	enableIROut(hz);
-
-  for (int i = 0; i < len; i++) {
-    if (i & 1) {
-      space(buf[i]);
-    } 
-    else {
-      mark(buf[i]);
-    }
-  }
-  space(0); // Just to be sure
-}
-
-void IRSendRev::mark(int time) {
-  // Sends an IR mark for the specified number of microseconds.
-  // The mark output is modulated at the PWM frequency.
-  TIMER_ENABLE_PWM; // Enable pin 3 PWM output
-  delayMicroseconds(time);
-}
-
-/* Leave pin off for time (given in microseconds) */
-void IRSendRev::space(int time) {
-  // Sends an IR space for the specified number of microseconds.
-  // A space is no output, so the PWM output is disabled.
-  TIMER_DISABLE_PWM; // Disable pin 3 PWM output
-  delayMicroseconds(time);
-}
-
-void IRSendRev::enableIROut(int khz) {
-  // Enables IR output.  The khz value controls the modulation frequency in kilohertz.
-  // The IR output will be on pin 3 (OC2B).
-  // This routine is designed for 36-40KHz; if you use it for other values, it's up to you
-  // to make sure it gives reasonable results.  (Watch out for overflow / underflow / rounding.)
-  // TIMER2 is used in phase-correct PWM mode, with OCR2A controlling the frequency and OCR2B
-  // controlling the duty cycle.
-  // There is no prescaling, so the output frequency is 16MHz / (2 * OCR2A)
-  // To turn the output on and off, we leave the PWM running, but connect and disconnect the output pin.
-  // A few hours staring at the ATmega documentation and this will all make sense.
-  // See my Secrets of Arduino PWM at http://arcfn.com/2009/07/secrets-of-arduino-pwm.html for details.
-
-  // Disable the Timer2 Interrupt (which is used for receiving IR)
-  TIMER_DISABLE_INTR; //Timer2 Overflow Interrupt
-  
- // pinMode(TIMER_PWM_PIN, OUTPUT);
- // digitalWrite(TIMER_PWM_PIN, LOW); // When not sending PWM, we want it low
-
-  TIMER_CONFIG_KHZ(khz);
-  TIMER_ENABLE_PWM;
-
-}
 
 void IRSendRev::Init(int revPin)
 {
@@ -280,15 +228,29 @@ unsigned char IRSendRev::IsDta()
 
     if(decode(&results))
     {
+    
+        cout << "rawlen = " << results.rawlen << endl;
+        for(int i=0; i<results.rawlen; i++)
+        {
+            cout << results.rawbuf[i] << '\t';
+                
+            if((i+1)%10 == 0)cout << endl;
+        }
+            
+        cout << endl;
+
         int count       = results.rawlen;
-        if(count < 64 || (count -4)%8 != 0)
+        if(count < 64  || (count -4)%8 != 0)
         {
 #if __DEBUG
             Serial.print("IR GET BAD DATA!\r\n");
+            Serial.print("count = ");Serial.println(count);
+    
 #endif
             Clear();        // Receive the next value
             return 0;
         }
+        
         int count_data  = (count-4) / 16;
 #if __DEBUG
         Serial.print("ir get data! count_data = ");
@@ -301,71 +263,6 @@ unsigned char IRSendRev::IsDta()
         return 0;
     }
 
-}
-
-void IRSendRev::Send(unsigned char *idata, unsigned char ifreq)
-{
-    int len = idata[0];
-    unsigned char start_high    = idata[1];
-    unsigned char start_low     = idata[2];
-    unsigned char nshort        = idata[3];
-    unsigned char nlong         = idata[4];
-    unsigned char datalen       = idata[5];
-
-    unsigned int *pSt = (unsigned int *)malloc((4+datalen*16)*sizeof(unsigned int));
-
-    if(NULL == pSt)
-    {
-#if __DEBUG
-        Serial.println("not enough place!!\r\n");
-#endif
-        exit(1);
-    }
-
-#if __DEBUG
-    Serial.println("begin to send ir:\r\n");
-    Serial.print("ifreq = ");Serial.println(ifreq);
-    Serial.print("len = ");Serial.println(len);
-    Serial.print("start_high = ");Serial.println(start_high);
-    Serial.print("start_low = ");Serial.println(start_low);
-    Serial.print("nshort = ");Serial.println(nshort);
-    Serial.print("nlong = ");Serial.println(nlong);
-    Serial.print("datalen = ");Serial.println(datalen);
-#endif
-
-    pSt[0] = start_high*50;
-    pSt[1] = start_low*50;
-
-    for(int i = 0; i<datalen; i++)
-    {
-        for(int j = 0; j<8; j++)
-        {
-            if(idata[6+i] & 0x01<<(7-j))
-            {
-                pSt[16*i + 2*j + 2] = nshort*50;
-                pSt[16*i + 2*j+3]   = nlong*50;
-            }
-            else
-            {
-                pSt[16*i + 2*j+2]   = nshort*50;
-                pSt[16*i + 2*j+3]   = nshort*50;
-            }
-        }
-    }
-
-    pSt[2+datalen*16]   = nshort*50;
-    pSt[2+datalen*16+1] = nshort*50;
-
-#if __DEBUG
-    for(int i = 0; i<4+datalen*16; i++)
-    {
-        Serial.print(pSt[i]);Serial.print("\t");
-    }
-    Serial.println();
-#endif
-    sendRaw(pSt, 4+datalen*16, ifreq);
-    free(pSt);
-    
 }
 
 IRSendRev IR;

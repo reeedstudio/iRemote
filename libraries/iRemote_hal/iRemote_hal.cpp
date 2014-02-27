@@ -2,12 +2,13 @@
 #include <iRemote_hal.h>
 #include <IRSendRev.h>
 
-#define PINIR   1
+#define PINIR   0
 
 #define PINREDLED   12
 #define PINGREENLED 13
 
 #define __DBG           0
+
 
 void iRemote_hal::begin()
 {
@@ -43,7 +44,7 @@ void iRemote_hal::greenLedOn(unsigned int time_ms)
     digitalWrite(PINGREENLED, LOW);
 }
     
-    //void keyPressRelease(unsigned char keyNum, unsigned int time_ms);
+//void keyPressRelease(unsigned char keyNum, unsigned int time_ms);
     
 void iRemote_hal::keyPressRelease(unsigned char keyNum)
 {
